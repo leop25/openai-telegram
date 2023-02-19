@@ -48,6 +48,14 @@ def generate_image(prompt, n=1, size="512x512"):
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # Definindo as funções que serão executadas quando o usuário enviar um comando
+@bot.message_handler(commands=["start"])
+def handle_start(message):
+    bot.reply_to(message, "Olá, eu sou um bot que gera texto e imagem a partir de textos. Digite /help para saber como me usar.")
+
+@bot.message_handler(commands=["help"])
+def handle_help(message):
+    bot.reply_to(message, "Para gerar texto, digite /text seguido do texto que você quer completar ou inspirar. Por exemplo: /text O que é inteligência artificial?\n\nPara gerar imagem, digite /image seguido do texto que você quer ilustrar ou descrever. Por exemplo: /image Um gato laranja dormindo em uma cama.\n\nDivirta-se!")
+
 @bot.message_handler(commands=["text"])
 def handle_text(message):
     user_text = message.text[6:].strip()

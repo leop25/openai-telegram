@@ -29,20 +29,28 @@ def generate_text(prompt):
         return f"Error: {response.status_code}"
 
 def generate_image(prompt, n=1, size="512x512"):
-    # Definindo a URL da API e os headers para fazer a requisição
-    url = "https://api.openai.com/v1/images/generations"
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
+    try:
+        # Definindo a URL da API e os headers para fazer a requisição
+        url = "https://api.openai.com/v1/images/generations"
+        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
 
-    # Definindo os dados a serem enviados na requisição
-    data = {"model": MODEL_IMAGE, "prompt": prompt, "n": n, "size": size}
+        # Definindo os dados a serem enviados na requisição
+        data = {"model": MODEL_IMAGE, "prompt": prompt, "n": n, "size": size}
 
-    # Fazendo a requisição e retornando as URLs das imagens geradas ou uma mensagem de erro
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    if response.status_code == 200:
-        urls = [image["url"] for image in response.json()["data"]]
+        # Fazendo a requisição e verificando se ocorreu algum erro
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response_json = response.json()
+        if "error" in response_json:
+            return f"Error: {response_json['error']['message']}"
+
+        # Se não houve erro, retornar as URLs das imagens geradas
+        urls = [image["url"] for image in response_json["data"]]
         return urls
-    else:
-        return f"Error: {response.status_code}"
+
+    except Exception as e:
+        # Retornando uma mensagem de erro em caso de exceção
+        return f"Error: {e}"
+
 
 # Iniciando o bot do Telegram
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -66,8 +74,13 @@ def handle_text(message):
 def handle_image(message):
     user_text = message.text[6:].strip()
     generated_image_urls = generate_image(user_text)
-    for url in generated_image_urls:
-        bot.send_photo(message.chat.id, url)
+    if isinstance(generated_image_urls, str):
+        # Se a resposta da API OpenAI contém um erro, envia a mensagem de erro para o usuário
+        bot.reply_to(message, generated_image_urls)
+    else:
+        for url in generated_image_urls:
+            bot.send_photo(message.chat.id, url)
+
 
 # Iniciando o processo de escutar mensagens do bot
 bot.polling()

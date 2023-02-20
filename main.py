@@ -65,7 +65,7 @@ def handle_start(message):
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
-    help_message = "Olá! Eu sou o ChatGPT, um bot de bate-papo alimentado pelo modelo de linguagem GPT. \n\nAqui estão os comandos que eu entendo:\n/start - Inicia o bot\n/help - Exibe esta mensagem de ajuda\n/image [prompt] - Gera uma imagem a partir do prompt fornecido\n/text [prompt] - Gera um texto a partir do prompt fornecido\n/tweet [prompt] - Gera um tweet a partir do prompt fornecido\n\nDigite um comando para começar!"
+    help_message = "Olá! Eu sou o Penna, um bot de bate-papo alimentado pelo modelo de linguagem GPT. \n\nAqui estão os comandos que eu entendo:\n/start - Inicia o bot\n/help - Exibe esta mensagem de ajuda\n/image [prompt] - Gera uma imagem a partir do prompt fornecido\n/text [prompt] - Gera um texto a partir do prompt fornecido\n/tweet [prompt] - Gera um tweet a partir do prompt fornecido\n\nDigite um comando para começar!"
     bot.send_message(message.chat.id, help_message)
 
 @bot.message_handler(commands=["text"])

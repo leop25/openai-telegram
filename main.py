@@ -9,10 +9,13 @@ MODEL_TEXT = "text-davinci-003"
 MODEL_IMAGE = "image-alpha-001"
 
 # Definindo os parâmetros para geração de texto
-MAX_TOKENS = 50
+MAX_TOKENS = 960
 TEMPERATURE = 0.5
 
 def generate_text(prompt):
+    if len(prompt) > 4096: # verificação do limite de caracteres do Telegram
+        return "O prompt é muito longo. Por favor, tente novamente com um prompt mais curto."
+        
     # Definindo a URL da API e os headers para fazer a requisição
     url = "https://api.openai.com/v1/completions"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
@@ -60,9 +63,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 def handle_start(message):
     bot.reply_to(message, "Olá, eu sou um bot que gera texto e imagem a partir de textos. Digite /help para saber como me usar.")
 
-@bot.message_handler(commands=["help"])
-def handle_help(message):
-    bot.reply_to(message, "Para gerar texto, digite /text seguido do texto que você quer completar ou inspirar. Por exemplo: /text O que é inteligência artificial?\n\nPara gerar imagem, digite /image seguido do texto que você quer ilustrar ou descrever. Por exemplo: /image Um gato laranja dormindo em uma cama.\n\nDivirta-se!")
+@bot.message_handler(commands=['help'])
+def send_welcome(message):
+    help_message = "Olá! Eu sou o ChatGPT, um bot de bate-papo alimentado pelo modelo de linguagem GPT. \n\nAqui estão os comandos que eu entendo:\n/start - Inicia o bot\n/help - Exibe esta mensagem de ajuda\n/image [prompt] - Gera uma imagem a partir do prompt fornecido\n/text [prompt] - Gera um texto a partir do prompt fornecido\n/tweet [prompt] - Gera um tweet a partir do prompt fornecido\n\nDigite um comando para começar!"
+    bot.send_message(message.chat.id, help_message)
 
 @bot.message_handler(commands=["text"])
 def handle_text(message):
@@ -81,6 +85,13 @@ def handle_image(message):
         for url in generated_image_urls:
             bot.send_photo(message.chat.id, url)
 
+@bot.message_handler(commands=["tweet"])
+def handle_tweet(message):
+    user_text = message.text[7:].strip()
+    prompt = f"resuma isso em um tweet de até 140 caracteres em português: {user_text}"
+    generated_text = generate_text(prompt)
+    tweet = generated_text
+    bot.reply_to(message, tweet)
 
 # Iniciando o processo de escutar mensagens do bot
 bot.polling()
